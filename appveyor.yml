@@ -16,7 +16,7 @@ before_build:
 build_script:
   # output will be in ./src/bin/debug/netcoreapp1.1/publish
   - cmd: dotnet publish ./src/Gabor/Gabor.csproj -c Release
-  - cmd: dotnet pack  -c Release /p:PackageVersion=1.0.{build} 
+  - cmd: dotnet pack ./src/Gabor/Gabor.csproj  -c Release /p:PackageVersion=1.0.{build} 
 after_build:
   # For once the build has completed
 artifacts:
