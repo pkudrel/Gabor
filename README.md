@@ -1,2 +1,2 @@
 # Gabor
-Another GitVersion generator
+GitVersion generator
