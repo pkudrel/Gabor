@@ -1,5 +1,5 @@
 #!/bin/bash
-source="--source https://api.nuget.org/v3/index.json --source https://www.myget.org/F/devwarsztaty-krk-net/api/v3/index.json --no-cache"
+source="--source https://api.nuget.org/v3/index.json --no-cache"
 #cd ../Warsztaty
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
