@@ -27,10 +27,14 @@ try {
         New-Item -ItemType Directory -Force -Path $toolsPath | Out-Null
     }
     Set-Location $toolsPath
-    Invoke-Expression "& {$((New-Object Net.WebClient).DownloadString('https://github.com/nightroman/PowerShelf/raw/master/Save-NuGetTool.ps1'))} Invoke-Build"
+    # https://stackoverflow.com/questions/41618766/powershell-invoke-webrequest-fails-with-ssl-tls-secure-channel
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    exec { & Invoke-Expression "& {$((New-Object Net.WebClient).DownloadString('https://github.com/nightroman/PowerShelf/raw/master/Save-NuGetTool.ps1'))} Invoke-Build"  }
 }
 
 catch {
+    Write-Error "Error: $_"
+    BREAK
 }
 finally {
     Pop-Location

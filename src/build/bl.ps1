@@ -20,23 +20,23 @@ param(
 $BL = @{}
 $BL.RepoRoot = (Resolve-Path ( & git rev-parse --show-toplevel))
 $BL.BuildDateTime = ((Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"))
-$BL.ScriptsPath = (Split-Path $MyInvocation.MyCommand.Path -Parent)
+$BL.BuildProjectPath = (Split-Path $MyInvocation.MyCommand.Path -Parent)
+$BL.ScriptsPath = (Join-Path $BL.BuildProjectPath "scripts")
+$BL.ToolsPath = (Join-Path $BL.BuildProjectPath "tools")
+
 $BL.BuildOutPath = (Join-Path $BL.RepoRoot ".build" )
 $BL.BuildScriptPath = $scriptFile
-$BL.PsAutoHelpers = (Join-Path $BL.ScriptsPath "vendor\ps-auto-helpers") 
-$BL.ib = (Join-Path $BL.ScriptsPath "tools\Invoke-Build\Invoke-Build.ps1")
-$BL.ibVersionFile = (Join-Path $BL.ScriptsPath "vendor\ps-auto-helpers\tools\ib-version.txt")
+$BL.ib = (Join-Path $BL.ToolsPath "Invoke-Build\Invoke-Build.ps1")
 
 # import tools
-. (Join-Path $BL.PsAutoHelpers "ps\psgitversion.ps1")
-. (Join-Path $BL.PsAutoHelpers "ps\ib-update-tools.ps1")
+. (Join-Path $BL.ScriptsPath "build-counter.ps1")
+#. (Join-Path $BL.PsAutoHelpers "ps\ib-update-tools.ps1")
 
+$BL.BuildCounter = Get-BuildNumber $buildCounter
 # Invoke-Build info
 Write-Output "Invoke-Build: Script file: $scriptFile"
 
 
-$BL.BuildVersion = Get-GitVersion $psGitVersionStrategy $major $minor $patch $buildCounter
-$buildMiscInfo = $BL.BuildVersion.AssemblyInformationalVersion
 Write-Output "`$BL values"
 $BL.GetEnumerator()| Sort-Object -Property name | Format-Table Name, Value -AutoSize
 

@@ -5,9 +5,8 @@
 
 [cmdletBinding()]
 param(
-	$appName = "SimpleScraper",
-	$serverDir = "C:\work\users\AntyPiracy\",
-	$toolsDir = (Join-Path $BL.ScriptsPath  "tools"),
+	$appName = "Gabor",
+	$toolsDir = $BL.ToolsPath,
 	$scriptsPath = $BL.ScriptsPath,
 	$nuget = (Join-Path $toolsDir  "nuget/nuget.exe"),
 	$libz = (Join-Path $toolsDir  "LibZ.Tool/tools/libz.exe"),
@@ -22,28 +21,32 @@ param(
 	$buildWorkDir  = (Join-Path $buildTmpDir "build" ),
 	$target  = "Release",
 	$donotMarge =  @(),
-	$projectSimpleScraper  = @{
-		name = "SimpleScraper";
+	$semVer = "0.0.$($BL.BuildCounter)",
+	$assemblyVersion = "1.0.0.0",
+	$assemblyInformationalVersion = "$($semVer)+BuildCounter.$($BL.BuildCounter).DateTime.$($BL.BuildDateTime)",
+
+	$projectGabor  = @{
+		name = "Gabor";
 		file = (Join-Path $BL.RepoRoot  "/src/Gabor/Gabor.csproj" );
 		exe = "Gabor.exe";
 		dir = "Gabor";
 		dstExe = "Gabor.exe";
 	},
 
-	$projects = @($projectSimpleScraper)
+	$projects = @($projectGabor)
 )
 
 
-
+"Sem: $semVer"
 
 
 # Msbuild 
 Set-Alias MSBuild (Resolve-MSBuild)
 
 # inser tools
-. (Join-Path $BL.ScriptsPath  "scripts\misc.ps1")
-. (Join-Path $BL.ScriptsPath  "scripts\io.ps1")
-. (Join-Path $BL.ScriptsPath  "scripts\assembly-tools.ps1")
+. (Join-Path $BL.ScriptsPath  "misc.ps1")
+. (Join-Path $BL.ScriptsPath  "io.ps1")
+. (Join-Path $BL.ScriptsPath  "assembly-tools.ps1")
 
 
 
@@ -54,7 +57,7 @@ task RestorePackage {
 
 	 Set-Location   $BL.RepoRoot
 	"Restore packages: Sln: {$sln}"
-	exec {  &$nuget restore $sln  }
+	exec {  dotnet restore $sln  }
 }
 
 task Startup-TeamCity {
@@ -105,15 +108,10 @@ task Build {
 				
 				$bv = $BL.BuildVersion
 
-				"AssemblyVersion: $($bv.AssemblyVersion)"
-				"AssemblyVersion: $($bv.AssemblyFileVersion)"
-				"AssemblyVersion: $($bv.AssemblyInformationalVersion)"
+				"AssemblyVersion: $($assemblyVersion)"
+				"AssemblyInformationalVersion: $($assemblyInformationalVersion)"
 
-				$srcWorkDir = Join-Path $srcDir $p.dir
-				#BackupTemporaryFiles $srcWorkDir  "Properties\AssemblyInfo.cs"
-				#UpdateAssemblyInfo $srcWorkDir $bv.AssemblyVersion $bv.AssemblyFileVersion $bv.AssemblyInformationalVersion $p.name "DenebLab" "DenebLab"
-				#exec { MSBuild $projectFile /v:quiet  /p:Configuration=$target /p:OutDir=$out  /p:AssemblyVersion="YourVersionNumber"    } 
-				exec {dotnet build $projectFile  /p:AssemblyVersion=1.2.3.4  /p:Version="2.0.0+build"    } 
+				exec { dotnet build --configuration $target $projectFile   -p:AssemblyVersion=$assemblyVersion  -p:Version=$semVer --output  $out    } 
 			}
 
 			catch {
@@ -362,23 +360,7 @@ function DownloadIfNotExists($src , $dst){
 }
 
 
-function GetFileFromDropbox ($apiKey, $filePath) {
 
-		
-		$headers = @{}
-		$headers.Add("Authorization",("Bearer {0}" -f $apiKey))
-		$headers.Add('Dropbox-API-Arg', ('{"path":"' + $filePath + '"}'))
-		$apiUrl = "https://content.dropboxapi.com/2/files/download";
-		$r = Invoke-RestMethod  -Uri $apiUrl `
-								-Headers $headers `
-								-ContentType "" `
-								-Method POST 
-		
-		# remove BOM from string
-        $r = $r -replace "\xEF\xBB\xBF", ""
-
-		return $r 
-}
 
 
 
@@ -388,5 +370,6 @@ function GetFileFromDropbox ($apiKey, $filePath) {
 task Startup  Startup-TeamCity, CheckTools
 task BuildTask RestorePackage,  Build
 task Publish Publish-Local, Publish-TeamCity
-task . Startup, BuildTask, Marge, Make-Nuget,  Publish
+#task . Startup , BuildTask, Marge, Make-Nuget,  Publish
+task . Startup , BuildTask #, Marge, Make-Nuget,  Publish
 
