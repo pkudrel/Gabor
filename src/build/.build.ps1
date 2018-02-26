@@ -111,7 +111,7 @@ task Build {
 				"AssemblyVersion: $($assemblyVersion)"
 				"AssemblyInformationalVersion: $($assemblyInformationalVersion)"
 
-				exec { dotnet build --configuration $target $projectFile   -p:AssemblyVersion=$assemblyVersion  -p:Version=$semVer --output  $out    } 
+				exec { dotnet build --configuration $target $projectFile  -p:Version=$semVer --output  $out    } 
 			}
 
 			catch {
@@ -334,7 +334,7 @@ task Publish-TeamCity -If ($env:TEAMCITY_VERSION ) {
 	} else {
 
 		$dst = $devPath
-		"Copy to syrup develop; Src:$src ; Dst: $dst"
+		"Copy to syrup develop; Src:$src ; Dst: $dst "
 		Copy-Item $src  -Destination  $dst
 
 	}
